@@ -57,6 +57,9 @@ python3.7 -m pip install --upgrade pip
 python3.7 -m pip install asyncio
 python3.7 -m pip install aiohttp
 
+# adding npm package for experiment
+sudo npm i lorem-ipsum
+
 # Download and install the OpenWhisk CLI
 wget https://github.com/apache/openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-linux-386.tgz
 tar -xvf OpenWhisk_CLI-latest-linux-386.tgz
