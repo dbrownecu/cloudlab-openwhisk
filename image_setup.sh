@@ -56,6 +56,7 @@ sudo apt install -y python3-pip
 python3.7 -m pip install --upgrade pip
 python3.7 -m pip install asyncio
 python3.7 -m pip install aiohttp
+python3.7 -m pip install tensorflow 
 
 # adding npm package for experiment
 sudo npm i lorem-ipsum
