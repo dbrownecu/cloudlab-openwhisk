@@ -71,6 +71,14 @@ setup_secondary() {
     printf "%s: %s\n" "$(date +"%T.%N")" "Done!"
 }
 
+
+apply_couchdb(){
+	helm repo add couchdb https://apache.github.io/couchdb-helm
+	helm install frsh-couch couchdb/couchdb  --set couchdbConfig.couchdb.uuid=$(curl https://www.uuidgenerator.net/api/version4 2>/dev/null | tr -d -)
+	printf "%s: %s\n" "$(date +"%T.%N")" "Couchdb is not ready yet!"
+	printf "need to run finish_cluster before using the db!"
+}
+
 setup_primary() {
     # initialize k8 primary node
     printf "%s: %s\n" "$(date +"%T.%N")" "Starting Kubernetes... (this can take several minutes)... "
@@ -92,6 +100,8 @@ setup_primary() {
 	printf "%s: %s\n" "$(date +"%T.%N")" "set /users/$CURRENT_USER/.kube to $CURRENT_USER:$PROFILE_GROUP!"
 	ls -lah /users/$CURRENT_USER/.kube
     done
+    printf "adding couchdb"
+    apply_couchdb()
     printf "%s: %s\n" "$(date +"%T.%N")" "Done!"
 }
 
