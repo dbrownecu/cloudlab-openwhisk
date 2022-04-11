@@ -66,15 +66,19 @@ get correct password from couchdb
 kubectl get secret frsh-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode
 get crorect ip address from pod listing
 
-curl -X POST -H "Content-Type: application/json" http://admin:CORRECT_PASSWORD@CORRECT_IP_ADDR:5984/_cluster_setup -d '{"action": "finish_cluster"}'
-curl -X GET http://admin:CORRECT_PASSWORD@CORRECT_IP_ADDRESS:5984/_all_dbs
+curl -X POST -H "Content-Type: application/json" http://admin:"$CORRECT_PASSWORD"@"$CORRECT_IP_ADDR":5984/_cluster_setup -d '{"action": "finish_cluster"}'
+curl -X GET http://admin:"$CORRECT_PASSWORD"@"$CORRECT_IP_ADDRESS":5984/_all_dbs
 should return ["_replicator","_users"]
 
 export FRSH_USR='admin'
-export FRSH_PWD=$(kubectl get secret djb-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode)
+export FRSH_PWD=$(kubectl get secret frsh-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode)
 export FRSH_URL='http://ip_addr_of_server:5984/'
 export FRSH_FILE_PATH='Directory containing the contents of xtra.tar'
 
+or for tsch
+setenv FRSH_USR 'admin'
+setenv FRSH_PWD $(kubectl get secret frsh-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode)
+setenv FRSH_URL 'http://ip_addr_of_server:5984/'
 python3 load_coachdb.py
 
 
