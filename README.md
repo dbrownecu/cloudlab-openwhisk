@@ -84,9 +84,14 @@ setenv FRSH_FILE_PATH DIRECTORY_OF_IMAGES_FOR_DB
 python3 load_coachdb.py
 
 Until I get the script wroking: 
+
 python3.7 -m pip install tensorflow
 python3.7 -m pip install cloudant
 
+helm repo add couchdb https://apache.github.io/couchdb-helm
+helm install frsh-couch couchdb/couchdb  --set couchdbConfig.couchdb.uuid=$(curl https://www.uuidgenerator.net/api/version4 2>/dev/null | tr -d -)
+printf "%s: %s\n" "$(date +"%T.%N")" "Couchdb is not ready yet!"
+printf "need to run finish_cluster before using the db!"
 
    ```
 
