@@ -100,9 +100,6 @@ setup_primary() {
 	printf "%s: %s\n" "$(date +"%T.%N")" "set /users/$CURRENT_USER/.kube to $CURRENT_USER:$PROFILE_GROUP!"
 	ls -lah /users/$CURRENT_USER/.kube
     done
-    printf "adding couchdb"
-    apply_couchdb()
-    printf "%s: %s\n" "$(date +"%T.%N")" "Done!"
 }
 
 apply_calico() {
@@ -345,4 +342,7 @@ prepare_for_openwhisk $2
 # Deploy OpenWhisk via Helm
 deploy_openwhisk $2
 
+printf "adding couchdb"
+apply_couchdb
+printf "%s: %s\n" "$(date +"%T.%N")" "Done!"
 printf "%s: %s\n" "$(date +"%T.%N")" "Profile setup completed!"
