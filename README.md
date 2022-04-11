@@ -79,7 +79,13 @@ or for tsch
 setenv FRSH_USR 'admin'
 setenv FRSH_PWD $(kubectl get secret frsh-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode)
 setenv FRSH_URL 'http://ip_addr_of_server:5984/'
+setenv FRSH_FILE_PATH DIRECTORY_OF_IMAGES_FOR_DB
+
 python3 load_coachdb.py
+
+Until I get the script wroking: 
+python3.7 -m pip install tensorflow
+python3.7 -m pip install cloudant
 
 
    ```
