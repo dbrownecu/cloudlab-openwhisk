@@ -62,7 +62,8 @@ The [```image_setup.sh```](image_setup.sh) script is how the image was created f
 create a directory for the images
 untar xtra.tar into the directory: the directory with the images will be the value assigned to FRSH_FILE_PATH
 
-get correct password from kubectl get secret djb-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode
+get correct password from couchdb
+kubectl get secret frsh-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode
 get crorect ip address from pod listing
 
 curl -X POST -H "Content-Type: application/json" http://admin:CORRECT_PASSWORD@CORRECT_IP_ADDR:5984/_cluster_setup -d '{"action": "finish_cluster"}'
