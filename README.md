@@ -66,14 +66,19 @@ get correct password from couchdb
 kubectl get secret frsh-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode
 get crorect ip address from pod listing
 
-curl -X POST -H "Content-Type: application/json" http://admin:"$CORRECT_PASSWORD"@"$CORRECT_IP_ADDR":5984/_cluster_setup -d '{"action": "finish_cluster"}'
-curl -X GET http://admin:"$CORRECT_PASSWORD"@"$CORRECT_IP_ADDRESS":5984/_all_dbs
-should return ["_replicator","_users"]
 
+
+
+
+export FRSH_IP=IPADDRESS_OF_SERVER
 export FRSH_USR='admin'
 export FRSH_PWD=$(kubectl get secret frsh-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode)
 export FRSH_URL='http://ip_addr_of_server:5984/'
 export FRSH_FILE_PATH='Directory containing the contents of xtra.tar'
+curl -X POST -H "Content-Type: application/json" http://admin:"$FRSH_PWD"@"$FRSH_IP":5984/_cluster_setup -d '{"action": "finish_cluster"}'
+should return "ok":true}
+curl -X GET http://admin:"$FRSH_PWD"@"$FRSH_IP":5984/_all_dbs
+should return ["_replicator","_users"]
 
 or for tsch
 setenv FRSH_USR 'admin'
@@ -87,7 +92,9 @@ Until I get the script wroking:
 
 python3.7 -m pip install tensorflow
 python3.7 -m pip install cloudant
+python3.7 -m pip install randimage
 
+under bash:
 helm repo add couchdb https://apache.github.io/couchdb-helm
 helm install frsh-couch couchdb/couchdb  --set couchdbConfig.couchdb.uuid=$(curl https://www.uuidgenerator.net/api/version4 2>/dev/null | tr -d -)
 printf "%s: %s\n" "$(date +"%T.%N")" "Couchdb is not ready yet!"
