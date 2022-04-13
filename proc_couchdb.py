@@ -1,6 +1,6 @@
 import sys
 import os
-import timeit
+from timeit import default_timer as timer
 import json
 
 from cloudant.client import CouchDB
@@ -22,7 +22,7 @@ def get_records(user, passwd, url):
     # print('we have the following keys {} '.format(keys))
     byte_count = 0
     rec_total = 0
-    start = timeit.timeit()
+    start = timer()
     for i in keys:
         doc = db_inst.get(i, remote=True)
         img_dict = doc['_attachments'].keys()
@@ -30,7 +30,7 @@ def get_records(user, passwd, url):
         img = doc.get_attachment(img_name)
         byte_count += len(img)
         rec_total += 1
-    end = timeit.timeit() - start
+    end = timer() - start
 
     status = {"recs_indb": rec_count, "recs_processed":rec_total, "bytes_read": byte_count, "elapsed_time": end}
     return {
