@@ -21,6 +21,7 @@ def get_records(user, passwd, url):
     keys = db_inst.keys(remote=True)
     # print('we have the following keys {} '.format(keys))
     byte_count = 0
+    rec_total = 0
     start = timeit.timeit()
     for i in keys:
         doc = db_inst.get(i, remote=True)
@@ -28,9 +29,10 @@ def get_records(user, passwd, url):
         img_name = get_fn(img_dict)
         img = doc.get_attachment(img_name)
         byte_count += len(img)
+        rec_total += 1
     end = timeit.timeit() - start
 
-    status = {"recs_read": rec_count, "bytes_read": byte_count, "elapsed_time": end}
+    status = {"recs_indb": rec_count, "recs_processed":rec_total, "bytes_read": byte_count, "elapsed_time": end}
     return {
         "statusCode": 200,
         "body": json.dumps(({
@@ -47,5 +49,4 @@ if __name__ == '__main__':
     recval = get_records(user, passwd, url)
 
     print('got some data {}'.format(recval))
-
 
