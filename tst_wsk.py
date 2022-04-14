@@ -4,6 +4,10 @@ from cloudant.client import CouchDB
 
 K_DBNAME = "frshimg"
 
+def get_fn(inp):
+    for i in inp:
+        return i
+
 
 def get_records(user, passwd, url, dbname):
     db_client = CouchDB(user, passwd, url=url, connect=True)
@@ -33,8 +37,8 @@ def get_records(user, passwd, url, dbname):
 
 
 def main(args):
-    url = args.get("url", "NONE")
-    passwd = args.get('passwd', "None")
+    url = args.get("url", "0000000000000")
+    passwd = args.get('passwd', "oooooooooooo")
     dbname = args.get("dbname", K_DBNAME)
     user = args.get("user", "admin")
     get_records(user, passwd, url, dbname)
