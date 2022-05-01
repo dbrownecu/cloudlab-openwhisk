@@ -41,12 +41,11 @@ def get_records(user, passwd, url):
     }
 
 
-if __name__ == '__main__':
-    user = os.getenv('FRSH_USR')  # = admin
-    passwd = os.getenv('FRSH_PWD')  # = $(kubectl get secret djb-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode)
-    url = os.getenv('FRSH_URL')  # = http://ipaddress_of_server:5984
+def main(args):
+    user = args.get("user","admin")
+    passwd = args.get("passwd", "none")
+    url = args.get("url", "none")
 
     recval = get_records(user, passwd, url)
-
-    print('got some data {}'.format(recval))
+    return (recval)
 
