@@ -91,7 +91,7 @@ to confirm the database can be read:
 
 wsk -i action create procit --docker st00p1d/action-python-v3.6-ai:latest proc_couchdb.py 
 
-wsk -i action invoke --result procit
+wsk -i action invoke --result procit --param url $FRSH_URL --param passwd $FRSH_PWD 
 
 ```
 {
