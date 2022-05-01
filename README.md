@@ -86,9 +86,19 @@ cd /local/repository
 tar -xvf xtra.tar
 pip3 install cloudant
 python3 load_coachdb.py  (This can fail. just re run it)
+to confirm the database can be read:
 
 
+wsk -i action create procit --docker st00p1d/action-python-v3.6-ai:latest proc_couchdb.py 
 
+wsk -i action invoke --result procit
+
+```
+{
+    "body": "{\"label\": {\"recs_indb\": 101, \"recs_processed\": 101, \"bytes_read\": 14270647, \"elapsed_time\": 2.9134957709975424}}",
+    "statusCode": 200
+}
+```
 
 
 Until I get the script wroking: 
