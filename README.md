@@ -70,23 +70,26 @@ get crorect ip address from pod listing
 
 
 
-export FRSH_IP=IPADDRESS_OF_SERVER
+export FRSH_IP=`kubectl get service/frsh-couch-svc-couchdb -o jsonpath='{.spec.clusterIP}'`
 export FRSH_USR='admin'
 export FRSH_PWD=$(kubectl get secret frsh-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode)
-export FRSH_URL='http://ip_addr_of_server:5984/'
-export FRSH_FILE_PATH='Directory containing the contents of xtra.tar'
+export FRSH_URL="http://${FRSH_IP}:5984/"
+export FRSH_FILE_PATH="/local/repository/xtra"
 curl -X POST -H "Content-Type: application/json" http://admin:"$FRSH_PWD"@"$FRSH_IP":5984/_cluster_setup -d '{"action": "finish_cluster"}'
 should return "ok":true}
 curl -X GET http://admin:"$FRSH_PWD"@"$FRSH_IP":5984/_all_dbs
 should return ["_replicator","_users"]
 
-or for tsch
-setenv FRSH_USR 'admin'
-setenv FRSH_PWD $(kubectl get secret frsh-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode)
-setenv FRSH_URL 'http://ip_addr_of_server:5984/'
-setenv FRSH_FILE_PATH DIRECTORY_OF_IMAGES_FOR_DB
 
-python3 load_coachdb.py
+for manual testing
+cd /local/repository
+tar -xvf xtra.tar
+pip3 install cloudant
+python3 load_coachdb.py  (This can fail. just re run it)
+
+
+
+
 
 Until I get the script wroking: 
 
