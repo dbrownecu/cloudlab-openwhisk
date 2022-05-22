@@ -1,19 +1,11 @@
 import json
 import logging
-import boto3
-import botocore
 import os
 import numpy as np
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LIB_DIR = os.path.join(SCRIPT_DIR, 'lib')
 
-def downloadFromS3(strBucket,strKey,strFile):
-    print(strBucket,strKey,strFile)
-    s3_client = boto3.client('s3')
-    #s3_client.download_file(strBucket, strKey, strFile)
-    s3 = boto3.resource('s3')
-    s3.Bucket(strBucket).download_file(strKey, strFile)
 
 def lambda_handler(event, context):
     for record in event['Records']:
@@ -30,12 +22,6 @@ def lambda_handler(event, context):
 
         BUCKET_NAME = record['s3']['bucket']['name']
         S3_KEY = record['s3']['object']['key']
-
-
-        downloadFromS3(trained_model_bucket,coco_names,yolo_path+coco_names)
-        downloadFromS3(trained_model_bucket,cfg,str(yolo_path+cfg))
-        downloadFromS3(trained_model_bucket,weights,yolo_path+weights)
-        downloadFromS3(BUCKET_NAME,S3_KEY,image_path)
 
         labelsPath = os.path.sep.join([yolo_path, "coco.names"])
         LABELS = open(yolo_path+coco_names).read().strip().split("\n")
