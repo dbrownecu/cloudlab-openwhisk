@@ -83,6 +83,7 @@ should return ["_replicator","_users"]
 
 for manual testing
 cd /local/repository
+git pull
 tar -xvf xtra.tar
 pip3 install cloudant
 python3 load_coachdb.py  (This can fail. just re run it)
