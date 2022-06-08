@@ -41,4 +41,4 @@ def main(args):
     passwd = args.get('passwd', "oooooooooooo")
     dbname = args.get("dbname", K_DBNAME)
     user = args.get("user", "admin")
-    get_records(user, passwd, url, dbname)
+    return(get_records(user, passwd, url, dbname))
