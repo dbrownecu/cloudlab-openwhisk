@@ -27,7 +27,7 @@ def get_records(user, passwd, url, dbname):
         rec_total += 1
     end = timer() - start
 
-    status = {"recs_indb": rec_count, "recs_processed": rec_total, "bytes_read": byte_count, "elapsed_time": end}
+    status = {"dbname": dbname, "recs_indb": rec_count, "recs_processed": rec_total, "bytes_read": byte_count, "elapsed_time": end}
     return {
         "statusCode": 200,
         "body": json.dumps(({
@@ -41,4 +41,4 @@ def main(args):
     passwd = args.get('passwd', "oooooooooooo")
     dbname = args.get("dbname", K_DBNAME)
     user = args.get("user", "admin")
-    return(get_records(user, passwd, url, dbname))
+    return (get_records(user, passwd, url, dbname))

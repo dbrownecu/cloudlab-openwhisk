@@ -100,7 +100,22 @@ wsk -i action invoke --result procit --param url $FRSH_URL --param passwd $FRSH_
     "statusCode": 200
 }
 ```
+to create the resized image db:
+python3 init_resize.py
+curl -X GET http://admin:"$FRSH_PWD"@"$FRSH_IP":5984/_all_dbs
+should return
+```
+["_replicator","_users","frshimg","resizeimg"]
 
+```
+wsk -i action invoke --result procit --param url $FRSH_URL --param passwd $FRSH_PWD --param dbname resizeimg
+```
+{
+    "body": "{\"label\": {\"dbname\": \"resizeimg\", \"recs_indb\": 9, \"recs_processed\": 9, \"bytes_read\": 445069, \"elapsed_time\": 0.27400944100372726}}",
+    "statusCode": 200
+}
+
+```
 
 Until I get the script wroking: 
 

@@ -1,5 +1,6 @@
 import sys
 import os
+
 from timeit import default_timer as timer
 import json
 
@@ -13,9 +14,11 @@ def get_fn(inp):
         return i
 
 
-def get_records(user, passwd, url):
+
+
+def get_records(user, passwd, url,dbname):
     db_client = CouchDB(user, passwd, url=url, connect=True);
-    db_inst = db_client[K_DBNAME]
+    db_inst = db_client[dbname]
     rec_count = db_inst.doc_count()
     # print('The database contains {} records'.format(rec_count))
     keys = db_inst.keys(remote=True)
@@ -32,7 +35,7 @@ def get_records(user, passwd, url):
         rec_total += 1
     end = timer() - start
 
-    status = {"recs_indb": rec_count, "recs_processed":rec_total, "bytes_read": byte_count, "elapsed_time": end}
+    status = {"dbname":dbname, "recs_indb": rec_count, "recs_processed":rec_total, "bytes_read": byte_count, "elapsed_time": end}
     return {
         "statusCode": 200,
         "body": json.dumps(({
@@ -45,7 +48,7 @@ def main(args):
     user = args.get("user","admin")
     passwd = args.get("passwd", "none")
     url = args.get("url", "none")
-
-    recval = get_records(user, passwd, url)
+    dbname = args.get("dbname", K_DBNAME)
+    recval = get_records(user, passwd, url,dbname)
     return (recval)
 
