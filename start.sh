@@ -7,8 +7,8 @@ INSTALL_DIR=/home/cloudlab-openwhisk
 NUM_MIN_ARGS=3
 PRIMARY_ARG="primary"
 SECONDARY_ARG="secondary"
-USAGE=$'Usage:\n\t./start.sh secondary <node_ip> <start_kubernetes>\n\t./start.sh primary <node_ip> <num_nodes> <start_kubernetes> <deploy_openwhisk>'
-NUM_PRIMARY_ARGS=5
+USAGE=$'Usage:\n\t./start.sh secondary <node_ip> <start_kubernetes>\n\t./start.sh primary <node_ip> <num_nodes> <start_kubernetes> <deploy_openwhisk> <invoker_count> <invoker_engine>'
+NUM_PRIMARY_ARGS=7
 PROFILE_GROUP="profileuser"
 
 configure_docker_storage() {
@@ -71,14 +71,6 @@ setup_secondary() {
     printf "%s: %s\n" "$(date +"%T.%N")" "Done!"
 }
 
-
-apply_couchdb(){
-	helm repo add couchdb https://apache.github.io/couchdb-helm
-	helm install frsh-couch couchdb/couchdb  --set couchdbConfig.couchdb.uuid=$(curl https://www.uuidgenerator.net/api/version4 2>/dev/null | tr -d -)
-	printf "%s: %s\n" "$(date +"%T.%N")" "Couchdb is not ready yet!"
-	printf "need to run finish_cluster before using the db!"
-}
-
 setup_primary() {
     # initialize k8 primary node
     printf "%s: %s\n" "$(date +"%T.%N")" "Starting Kubernetes... (this can take several minutes)... "
@@ -100,6 +92,7 @@ setup_primary() {
 	printf "%s: %s\n" "$(date +"%T.%N")" "set /users/$CURRENT_USER/.kube to $CURRENT_USER:$PROFILE_GROUP!"
 	ls -lah /users/$CURRENT_USER/.kube
     done
+    printf "%s: %s\n" "$(date +"%T.%N")" "Done!"
 }
 
 apply_calico() {
@@ -171,37 +164,31 @@ add_cluster_nodes() {
 }
 
 prepare_for_openwhisk() {
-     # Args: 1 = IP, 2 = num nodes, 3 = num invokers, 4 = invoker engine
+    # Args: 1 = IP, 2 = num nodes, 3 = num invokers, 4 = invoker engine
 
-     pushd $INSTALL_DIR/openwhisk-deploy-kube
-     git pull
-     popd
-
+    pushd $INSTALL_DIR/openwhisk-deploy-kube
+    git pull
+    popd
 
     # Iterate over each node and set the openwhisk role
     # From https://superuser.com/questions/284187/bash-iterating-over-lines-in-a-variable
-
     NODE_NAMES=$(kubectl get nodes -o name)
+    CORE_NODES=$(($2-$3))
     counter=0
     while IFS= read -r line; do
-	if [ $counter -lt 1 ] ; then
-	    printf "%s: %s\n" "$(date +"%T.%N")" "Labelled ${line:5} as openwhisk core node"
-	    kubectl label nodes ${line:5} openwhisk-role=core
-            if [ $? -ne 0 ]; then
-                echo "***Error: Failed to set openwhisk role to invoker on ${line:5}."
-                exit -1
-            fi
+	if [ $counter -lt $CORE_NODES ] ; then
+	    printf "%s: %s\n" "$(date +"%T.%N")" "Skipped labelling non-invoker node ${line:5}"
         else
-	    printf "%s: %s\n" "$(date +"%T.%N")" "Labelled ${line:5} as openwhisk invoker node"
             kubectl label nodes ${line:5} openwhisk-role=invoker
             if [ $? -ne 0 ]; then
                 echo "***Error: Failed to set openwhisk role to invoker on ${line:5}."
                 exit -1
             fi
+	    printf "%s: %s\n" "$(date +"%T.%N")" "Labelled ${line:5} as openwhisk invoker node"
 	fi
 	counter=$((counter+1))
     done <<< "$NODE_NAMES"
-    printf "%s: %s\n" "$(date +"%T.%N")" "Labelled all nodes as invoker nodes."
+    printf "%s: %s\n" "$(date +"%T.%N")" "Finished labelling nodes."
 
     kubectl create namespace openwhisk
     if [ $? -ne 0 ]; then
@@ -212,13 +199,23 @@ prepare_for_openwhisk() {
 
     cp /local/repository/mycluster.yaml $INSTALL_DIR/openwhisk-deploy-kube/mycluster.yaml
     sed -i.bak "s/REPLACE_ME_WITH_IP/$1/g" $INSTALL_DIR/openwhisk-deploy-kube/mycluster.yaml
+    sed -i.bak "s/REPLACE_ME_WITH_INVOKER_ENGINE/$4/g" $INSTALL_DIR/openwhisk-deploy-kube/mycluster.yaml
+    sed -i.bak "s/REPLACE_ME_WITH_INVOKER_COUNT/$3/g" $INSTALL_DIR/openwhisk-deploy-kube/mycluster.yaml
     sudo chown $USER:$PROFILE_GROUP $INSTALL_DIR/openwhisk-deploy-kube/mycluster.yaml
     sudo chmod -R g+rw $INSTALL_DIR/openwhisk-deploy-kube/mycluster.yaml
-    printf "%s: %s\n" "$(date +"%T.%N")" "Added actual primary node IP to $INSTALL_DIR/openwhisk-deploy-kube/mycluster.yaml"
+    printf "%s: %s\n" "$(date +"%T.%N")" "Updated $INSTALL_DIR/openwhisk-deploy-kube/mycluster.yaml"
+    
+    if [ $4 == "docker" ] ; then
+        if test -d "/mydata"; then
+	    sed -i.bak "s/\/var\/lib\/docker\/containers/\/mydata\/docker\/containers/g" $INSTALL_DIR/openwhisk-deploy-kube/helm/openwhisk/templates/_invoker-helpers.tpl
+            printf "%s: %s\n" "$(date +"%T.%N")" "Updated dockerrootdir to /mydata/docker/containers in $INSTALL_DIR/openwhisk-deploy-kube/helm/openwhisk/templates/_invoker-helpers.tpl"
+        fi
+    fi
 }
 
 
 deploy_openwhisk() {
+    # Takes cluster IP as argument to set up wskprops files.
 
     # Deploy openwhisk via helm
     printf "%s: %s\n" "$(date +"%T.%N")" "About to deploy OpenWhisk via Helm... "
@@ -343,13 +340,19 @@ if [ "$5" = "False" ]; then
     exit 0
 fi
 
-# Prepare cluster to deploy OpenWhisk, takes IP and node num and num invokers
-prepare_for_openwhisk $2
+# Prepare cluster to deploy OpenWhisk: takes IP, num nodes, invoker num, and invoker engine
+prepare_for_openwhisk $2 $3 $6 $7
 
 # Deploy OpenWhisk via Helm
+# Takes cluster IP
 deploy_openwhisk $2
-
-printf "adding couchdb"
+apply_couchdb(){
+        helm repo add couchdb https://apache.github.io/couchdb-helm
+        helm install frsh-couch couchdb/couchdb  --set couchdbConfig.couchdb.uuid=$(curl https://www.uuidgenerator.net/api/version4 2>/dev/null | tr -d -)
+        printf "%s: %s\n" "$(date +"%T.%N")" "Couchdb is not ready yet!"
+        printf "need to run finish_cluster before using the db!"
+}
 apply_couchdb
-printf "%s: %s\n" "$(date +"%T.%N")" "Done!"
+printf "adding couchdb"
+
 printf "%s: %s\n" "$(date +"%T.%N")" "Profile setup completed!"
