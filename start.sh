@@ -31,7 +31,7 @@ configure_docker_storage() {
 disable_swap() {
     # Turn swap off and comment out swap line in /etc/fstab
     sudo swapoff -a
-    if [ $? -eq 0 ]; then   
+    if [ $? -eq 0 ]; then
         printf "%s: %s\n" "$(date +"%T.%N")" "Turned off swap"
     else
         echo "***Error: Failed to turn off swap, which is necessary for Kubernetes"
@@ -48,7 +48,7 @@ setup_secondary() {
         case $cmd in
             *"kube"*)
                 MY_CMD=$cmd
-                break 
+                break
                 ;;
             *)
 	    	printf "%s: %s\n" "$(date +"%T.%N")" "Read: $cmd"
@@ -69,6 +69,13 @@ setup_secondary() {
     # run command to join kubernetes cluster
     eval $MY_CMD
     printf "%s: %s\n" "$(date +"%T.%N")" "Done!"
+}
+
+apply_couchdb(){
+        helm repo add couchdb https://apache.github.io/couchdb-helm
+        helm install frsh-couch couchdb/couchdb  --set couchdbConfig.couchdb.uuid=$(curl https://www.uuidgenerator.net/api/version4 2>/dev/null | tr -d -)
+        printf "%s: %s\n" "$(date +"%T.%N")" "Couchdb is not ready yet!"
+        printf "need to run finish_cluster before using the db!"
 }
 
 setup_primary() {
@@ -240,7 +247,6 @@ deploy_openwhisk() {
         DEPLOY_COMPLETE=$(kubectl get pods -n openwhisk | grep owdev-install-packages | grep Completed | wc -l)
     done
     printf "%s: %s\n" "$(date +"%T.%N")" "OpenWhisk deployed!"
-    
     # Set up wsk properties for all users
     for FILE in /users/*; do
         CURRENT_USER=${FILE##*/}
@@ -346,13 +352,6 @@ prepare_for_openwhisk $2 $3 $6 $7
 # Deploy OpenWhisk via Helm
 # Takes cluster IP
 deploy_openwhisk $2
-apply_couchdb(){
-        helm repo add couchdb https://apache.github.io/couchdb-helm
-        helm install frsh-couch couchdb/couchdb  --set couchdbConfig.couchdb.uuid=$(curl https://www.uuidgenerator.net/api/version4 2>/dev/null | tr -d -)
-        printf "%s: %s\n" "$(date +"%T.%N")" "Couchdb is not ready yet!"
-        printf "need to run finish_cluster before using the db!"
-}
 apply_couchdb
 printf "adding couchdb"
-
 printf "%s: %s\n" "$(date +"%T.%N")" "Profile setup completed!"
