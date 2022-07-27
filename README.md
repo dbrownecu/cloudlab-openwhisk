@@ -64,11 +64,11 @@ untar xtra.tar into the directory: the directory with the images will be the val
 
 get correct password from couchdb
 kubectl get secret frsh-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode
-get crorect ip address from pod listing
+get correct ip address from pod listing
 
+helm repo add couchdb https://apache.github.io/couchdb-helm
 
-
-
+helm install frsh-couch couchdb/couchdb  --set couchdbConfig.couchdb.uuid=$(curl https://www.uuidgenerator.net/api/version4 2>/dev/null | tr -d -)
 
 export FRSH_IP=`kubectl get service/frsh-couch-svc-couchdb -o jsonpath='{.spec.clusterIP}'`
 export FRSH_USR='admin'
@@ -142,7 +142,7 @@ python3 init_resize.py
 
 Until I get the script wroking: 
 
-python3.7 -m pip install tensorflow
+
 python3.7 -m pip install cloudant
 python3.7 -m pip install randimage
 
