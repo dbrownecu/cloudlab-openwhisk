@@ -109,7 +109,7 @@ should return
 
 ```
 
-wsk -i action create timeit --docker st00p1d/action-python-v3.6-ai:latest  image_proc.py 
+wsk -i action create timeit --docker st00p1d/action-python-v3.6-ai:latest  image_proc3.py 
 
 wsk -i action invoke timeit --result --param url $FRSH_URL --param passwd $FRSH_PWD --param count 12
 
