@@ -119,7 +119,7 @@ def test_count(user, passwd, url, num_recs,db1, db2):
         end = time.time()-start_1
 
         time_dict["iteration {}: preprocess_image total".format(ctr)] = (start_1, end)
-        time_dict[start_1] =
+
         start_1 = time.time()
         ret = write2db(img_name,db2, user,passwd,url)
         end = time.time()-start_1
