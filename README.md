@@ -134,6 +134,18 @@ wsk -i action invoke --result procit --param url $FRSH_URL --param passwd $FRSH_
 
 ```
 
+
+Non looped version of code
+
+```
+
+wsk -i action create timesingle --docker st00p1d/action-python-v3.6-ai:latest  image_proc4.py 
+
+wsk -i action invoke timesingle --result --param url $FRSH_URL --param passwd $FRSH_PWD --param count 1
+
+```
+
+
 to reset the db
 curl -X DELETE http://admin:"$FRSH_PWD"@"$FRSH_IP":5984/resizeimg
 python3 init_resize.py
