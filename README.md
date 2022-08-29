@@ -132,8 +132,6 @@ wsk -i action invoke --result procit --param url $FRSH_URL --param passwd $FRSH_
     "statusCode": 200
 }
 
-```
-
 
 Non looped version of code
 
@@ -142,6 +140,9 @@ Non looped version of code
 wsk -i action create timesingle --docker st00p1d/action-python-v3.6-ai:latest  image_proc4.py 
 
 wsk -i action invoke timesingle --result --param url $FRSH_URL --param passwd $FRSH_PWD --param count 1
+```
+
+
 
 ```
 
