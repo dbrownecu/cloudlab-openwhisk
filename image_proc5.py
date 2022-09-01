@@ -18,23 +18,16 @@ def write2db(fn, dbname, user, passwd, url,img):
         return ("cannot open database with {}:{},@{}".format(user, passwd, url))
 
     db_inst = db_client[dbname]
-    resized_fn =K_PREFIX.format(fn)
     id = int(time.time()*1000)
     dta = {
         '_id':"{}".format(id),
         'name':fn
         }
     doc = db_inst.create_document(dta)
-    fh = open(join('/tmp',resized_fn),'rb')
-    if fh:
-        f_dta = bytearray(fh.read())
-        ret=doc.put_attachment(fn, K_FILE_TYPE,f_dta)
-        doc.save()
-        fh.close()
-        ret_string = "OK: wrote {} bytes for {}".format(len(f_dta), id)
+    f_dta = img
+    ret=doc.put_attachment(fn, K_FILE_TYPE,f_dta)
+    doc.save()
     db_client.disconnect()
-
-    return ret_string
 
 
 
@@ -53,21 +46,17 @@ def write_file(pth,fn, dta):
     fh.close()
     return ("wrote: {}".format(fullpth))
 
-def preprocess_image(d_pth,fn,time_dict):
+def preprocess_image(d_pth,fn,time_dict,img_arr):
     start = time.time()
-    img = cv2.imread(join(d_pth,fn))
+    img_array = asarray(img_arr)
     end = time.time()-start
-    time_dict["cv2.imread {}".format(fn)] = (start, end)
+
+    time_dict["asarray of img"] = (start, end)
     start = time.time()
-    img2 = cv2.resize(img, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+    img2 = cv2.resize(img_array, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
     end = time.time() - start
     time_dict["cv2.resize"] = (start, end)
-    xxx = join(d_pth,K_PREFIX.format(fn))
-    start = time.time()
-    cv2.imwrite(xxx,img2)
-    end = time.time()-start
-    time_dict["cv2.imwrite"] = (start, end)
-
+    return img2
 def test_count(user, passwd, url,key_idx, db1, db2):
     time_dict = {}
     start = time.time()
@@ -83,7 +72,7 @@ def test_count(user, passwd, url,key_idx, db1, db2):
     rec_total = 0
     start = time.time()
 
-    i = key_idx
+    i = str(key_idx)
     start_1 = time.time()
     doc = db_inst.get(i, remote=True)
     end = time.time() - start_1
@@ -96,17 +85,12 @@ def test_count(user, passwd, url,key_idx, db1, db2):
     time_dict["doc.get_attachment"] = (start_1, end)
 
     start_1 = time.time()
-    ret = write_file('/tmp', img_name, img)
-    end = time.time() - start_1
-
-    time_dict["write_file"] = (start_1, end)
-    start_1 = time.time()
-    preprocess_image('/tmp', img_name, time_dict)
+    prog_img = preprocess_image(img, time_dict)
     end = time.time() - start_1
 
     time_dict["preprocess_image total"] = (start_1, end)
     start_1 = time.time()
-    ret = write2db(img_name, db2, user, passwd, url)
+    write2db(img_name, db2, user, passwd, url,prog_img)
     end = time.time() - start_1
     time_dict["iteration {}: write2db"] = (start_1, end)
     end = time.time()-start

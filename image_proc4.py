@@ -82,7 +82,7 @@ def test_count(user, passwd, url,key_idx, db1, db2):
     rec_total = 0
     start = time.time()
 
-    i = key_idx
+    i = str(key_idx)
     start_1 = time.time()
     doc = db_inst.get(i, remote=True)
     end = time.time() - start_1
