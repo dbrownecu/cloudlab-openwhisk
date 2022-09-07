@@ -5,38 +5,38 @@ import time
 import cv2
 from numpy import asarray
 
-
 K_DBNAME = "frshimg"
 K_DB2NAME = "resizeimg"
 K_PREFIX = "resized-{}"
-K_FILE_TYPE="image/png"
+K_FILE_TYPE = "image/png"
 
-def write2db(fn, dbname, user, passwd, url,img):
+
+def write2db(fn, dbname, user, passwd, url, img):
     ret_string = "FAILED: did not write {} to {}".format(fn, dbname)
-    db_client = CouchDB(user,passwd, url=url, connect=True)
+    db_client = CouchDB(user, passwd, url=url, connect=True)
     if not db_client.session()['ok']:
         return ("cannot open database with {}:{},@{}".format(user, passwd, url))
 
     db_inst = db_client[dbname]
-    id = int(time.time()*1000)
+    id = int(time.time() * 1000)
     dta = {
-        '_id':"{}".format(id),
-        'name':fn
-        }
+        '_id': "{}".format(id),
+        'name': fn
+    }
     doc = db_inst.create_document(dta)
     f_dta = img
-    ret=doc.put_attachment(fn, K_FILE_TYPE,f_dta)
+    ret = doc.put_attachment(fn, K_FILE_TYPE, f_dta)
     doc.save()
     db_client.disconnect()
-
 
 
 def get_fn(inp):
     for i in inp:
         return i
 
-def write_file(pth,fn, dta):
-    fullpth = join(pth,fn)
+
+def write_file(pth, fn, dta):
+    fullpth = join(pth, fn)
     try:
         fh = open(fullpth, 'wb')
     except Exception as e:
@@ -46,10 +46,11 @@ def write_file(pth,fn, dta):
     fh.close()
     return ("wrote: {}".format(fullpth))
 
-def preprocess_image(d_pth,fn,time_dict,img_arr):
+
+def preprocess_image(time_dict, img_arr):
     start = time.time()
     img_array = asarray(img_arr)
-    end = time.time()-start
+    end = time.time() - start
 
     time_dict["asarray of img"] = (start, end)
     start = time.time()
@@ -57,15 +58,17 @@ def preprocess_image(d_pth,fn,time_dict,img_arr):
     end = time.time() - start
     time_dict["cv2.resize"] = (start, end)
     return img2
-def test_count(user, passwd, url,key_idx, db1, db2):
+
+
+def test_count(user, passwd, url, key_idx, db1, db2):
     time_dict = {}
     start = time.time()
     db_client = CouchDB(user, passwd, url=url, connect=True)
-    end = time.time()-start
-    time_dict["DB_ClientConnect"]=(start, end)
+    end = time.time() - start
+    time_dict["DB_ClientConnect"] = (start, end)
     start = time.time()
     db_inst = db_client[db1]
-    end = time.time()-start
+    end = time.time() - start
     time_dict["db_client"] = (start, end)
 
     byte_count = 0
@@ -90,23 +93,25 @@ def test_count(user, passwd, url,key_idx, db1, db2):
 
     time_dict["preprocess_image total"] = (start_1, end)
     start_1 = time.time()
-    write2db(img_name, db2, user, passwd, url,prog_img)
+    write2db(img_name, db2, user, passwd, url, prog_img)
     end = time.time() - start_1
     time_dict["iteration {}: write2db"] = (start_1, end)
-    end = time.time()-start
-    time_dict["total single proc time"] = (start,end)
+    end = time.time() - start
+    time_dict["total single proc time"] = (start, end)
     return time_dict
 
+
 def main(args):
-    user = args.get("user","admin") # = admin
-    passwd = args.get("passwd","none") # = $(kubectl get secret djb-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode)
-    url = args.get("url","none")  # = http://ipaddress_of_server:5984
-    db1 = args.get("db1",K_DBNAME)
-    db2 = args.get("db2",K_DB2NAME)
-    count = args.get("count",1)
-    recval = test_count(user,passwd,url,count, db1, db2)
+    user = args.get("user", "admin")  # = admin
+    passwd = args.get("passwd",
+                      "none")  # = $(kubectl get secret djb-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode)
+    url = args.get("url", "none")  # = http://ipaddress_of_server:5984
+    db1 = args.get("db1", K_DBNAME)
+    db2 = args.get("db2", K_DB2NAME)
+    count = args.get("count", 1)
+    recval = test_count(user, passwd, url, count, db1, db2)
     return {
-        "statusCode" :0,
+        "statusCode": 0,
         "body": json.dumps(({
             "label": recval,
         })),
