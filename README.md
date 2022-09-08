@@ -59,16 +59,17 @@ The [```image_setup.sh```](image_setup.sh) script is how the image was created f
 ##Couchdb
 
 ```
+helm repo add couchdb https://apache.github.io/couchdb-helm
+
+helm install frsh-couch couchdb/couchdb  --set couchdbConfig.couchdb.uuid=$(curl https://www.uuidgenerator.net/api/version4 2>/dev/null | tr -d -)
+
 create a directory for the images
 untar xtra.tar into the directory: the directory with the images will be the value assigned to FRSH_FILE_PATH
 
 get correct password from couchdb
 kubectl get secret frsh-couch-couchdb -o go-template='{{ .data.adminPassword }}' | base64 --decode
 get correct ip address from pod listing
-
-helm repo add couchdb https://apache.github.io/couchdb-helm
-
-helm install frsh-couch couchdb/couchdb  --set couchdbConfig.couchdb.uuid=$(curl https://www.uuidgenerator.net/api/version4 2>/dev/null | tr -d -)
+kubectl get service/frsh-couch-svc-couchdb -o jsonpath='{.spec.clusterIP}
 
 export FRSH_IP=`kubectl get service/frsh-couch-svc-couchdb -o jsonpath='{.spec.clusterIP}'`
 export FRSH_USR='admin'

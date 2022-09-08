@@ -55,7 +55,7 @@ def preprocess_image(im_arr,time_dict):
     end = time.time() - start
     time_dict["array of img"] = (start, end)
     start = time.time()
-    img2 = cv2.resize(img_array, none,  fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+    img2 = cv2.resize(img_array, None,  fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
     end = time.time() - start
     time_dict["cv2.resize"] = (start, end)
     return img2
