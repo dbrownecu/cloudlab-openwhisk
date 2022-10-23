@@ -25,7 +25,7 @@ def write2db(fn, dbname, user, passwd, url, img):
         'name': fn
     }
     doc = db_inst.create_document(dta)
-    f_dta = img
+    f_dta = bytearray(img)
     ret = doc.put_attachment(fn, K_FILE_TYPE, f_dta)
     doc.save()
     db_client.disconnect()
@@ -96,7 +96,7 @@ def test_count(user, passwd, url, key_idx, db1, db2):
     start_1 = time.time()
     write2db(img_name, db2, user, passwd, url, prog_img)
     end = time.time() - start_1
-    time_dict["iteration {}: write2db"] = (start_1, end)
+    time_dict["write2db"] = (start_1, end)
     end = time.time() - start
     time_dict["total single proc time"] = (start, end)
     return time_dict
