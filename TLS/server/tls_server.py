@@ -1,5 +1,6 @@
 import socket
 import ssl
+import time
 
 SERVERPEM="keys/server.crt"
 PRIVATEKEY="keys/server.key"
@@ -18,11 +19,10 @@ def listener():
             conn, addr = ssock.accept()
             print("connection {}\n".format(conn))
             print("address {}\n".format(addr))
-            while True:
-                data = ssock.recv(1024)
-                if not data:
-                    break
-                print("received: {}".format(data.decode('utf-8')))
+            data = conn.recv(2048).decode('utf-8')
+            while data:
+                print("{},received,{}".format(time.time(),data))
+                data = conn.recv(2048).decode('utf-8')
 
 
 if __name__ == '__main__':

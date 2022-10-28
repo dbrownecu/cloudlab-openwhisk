@@ -3,7 +3,8 @@ import ssl
 import time
 import json
 import os
-CLIENTCERT="""-----BEGIN CERTIFICATE-----
+
+CLIENTCERT = """-----BEGIN CERTIFICATE-----
 MIIDzzCCArcCFECe1578Mv9NE/jw7ypS5TaJ0aUlMA0GCSqGSIb3DQEBCwUAMIGj
 MQswCQYDVQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2Fu
 IEZyYW5jaXNjbzETMBEGA1UECgwKQ1UgQm91bGRlcjEUMBIGA1UECwwLU3lzdGVt
@@ -27,56 +28,55 @@ IoMnxDduVLkhnuwCbSsPFPxNaCacju2fxW2yIvU5y/CNggpNeJQlNzfDRV7wzidi
 EZZdP4LbqUQ38Npik2SJtj4iSA==
 -----END CERTIFICATE-----"""
 
-
-
-
 CERTFILE = "/tmp/clientCert"
 
+
 def genFiles():
-    fn = open(CERTFILE,"w")
+    fn = open(CERTFILE, "w")
     fn.write(CLIENTCERT)
     fn.close()
     os.chmod(CERTFILE, 0o700)
 
 
-def connectSendLoop(host, port, interval, delay ):
-
+def connectSendLoop(host, port, interval, message, delay):
     genFiles()
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     context.load_verify_locations(CERTFILE)
     context.check_hostname = False
     context.verify_mode = ssl.CERT_NONE
 
-    with socket.create_connection(('127.0.0.1', port)) as  sock:
+    with socket.create_connection(('127.0.0.1', port)) as sock:
         with context.wrap_socket(sock, server_hostname=host) as ssock:
             if ssock:
                 print("soket {}".format(ssock))
                 for i in range(interval):
                     t = time.time()
-                    stamp = "{}: {} this is a test\n".format(i, t)
-                    print(stamp)
+                    stamp = "{}: {} {}\n".format(i, t, message)
                     ssock.send(stamp.encode("utf-8"))
                     time.sleep(delay)
+                ssock.shutdown(socket.SHUT_RDWR)
+                ssock.close()
             else:
                 print("Socket problems {}\n".format(ssock))
 
-def commonfunc(host,port,interval,delay):
-    connectSendLoop(host,port, interval,delay)
+
+def commonfunc(host, port, interval, message, delay):
+    connectSendLoop(host, port, interval, message, delay)
     return {
-        "statusCode" :0,
+        "statusCode": 0,
         "body": json.dumps(({
             "label": "This is empty",
         })),
     }
 
 
-
 def main(args):
-    host = args.get("host","localhost")
-    interval = args.get("interval",10)
-    delay = args.get("delay",0)
+    host = args.get("host", "localhost")
+    interval = args.get("interval", 10)
+    delay = args.get("delay", 0)
+    message = args.get("message", "This is a test")
 
-    retval = commonfunc(host,port, interval, delay)
+    retval = commonfunc(host, port, interval, message, delay)
     return retval
 
 
@@ -85,5 +85,6 @@ if __name__ == '__main__':
     port = 8443
     interval = 100
     delay = 0
+    message = "This is a test from {}".format(socket.gethostname())
 
-    retval = commonfunc(host,port,interval, delay)
+    retval = commonfunc(host, port, interval, message, delay)
