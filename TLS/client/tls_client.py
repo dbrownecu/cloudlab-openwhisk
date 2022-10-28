@@ -3,6 +3,8 @@ import ssl
 import time
 import json
 import os
+import string
+import random
 
 CLIENTCERT = """-----BEGIN CERTIFICATE-----
 MIIDzzCCArcCFECe1578Mv9NE/jw7ypS5TaJ0aUlMA0GCSqGSIb3DQEBCwUAMIGj
@@ -38,12 +40,25 @@ def genFiles():
     os.chmod(CERTFILE, 0o700)
 
 
-def connectSendLoop(host, port, interval, message, delay):
+def genRandomString(maxlen):
+    retval = ''.join(random.choices(string.ascii_letters, k=random.randint(1, maxlen)))
+    return retval
+
+def connectSendLoop(host, port, interval, message, delay, randmsg, randlen, msglen, maxrand):
     genFiles()
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     context.load_verify_locations(CERTFILE)
     context.check_hostname = False
     context.verify_mode = ssl.CERT_NONE
+
+    l_msg = ""
+
+    if randmsg == 1 and randlen == 0 and msglen != 0:
+        l_msg = '1' + ''.join('0' for i in range(msglen)) + '1'
+    elif randmsg == 1 and randlen != 0 and maxrand != 0:
+        l_msg = genRandomString(maxrand)
+    if randmsg == 0:
+        l_msg = message
 
     with socket.create_connection(('127.0.0.1', port)) as sock:
         with context.wrap_socket(sock, server_hostname=host) as ssock:
@@ -51,17 +66,20 @@ def connectSendLoop(host, port, interval, message, delay):
                 print("soket {}".format(ssock))
                 for i in range(interval):
                     t = time.time()
-                    stamp = "{}: {} {}\n".format(i, t, message)
-                    ssock.send(stamp.encode("utf-8"))
+                    stamp = "{}: {} {}\n".format(i, t, l_msg)
+                    ssock.sendall(stamp.encode("utf-8"))
                     time.sleep(delay)
+                    if maxrand != 0:
+                        l_msg = genRandomString(maxrand)
+
                 ssock.shutdown(socket.SHUT_RDWR)
                 ssock.close()
             else:
                 print("Socket problems {}\n".format(ssock))
 
 
-def commonfunc(host, port, interval, message, delay):
-    connectSendLoop(host, port, interval, message, delay)
+def commonfunc(host, port, interval, message, delay, randmsg, randlen, msglen, maxrand):
+    connectSendLoop(host, port, interval, message, delay, randmsg, randlen, msglen, maxrand)
     return {
         "statusCode": 0,
         "body": json.dumps(({
@@ -75,16 +93,22 @@ def main(args):
     interval = args.get("interval", 10)
     delay = args.get("delay", 0)
     message = args.get("message", "This is a test")
-
-    retval = commonfunc(host, port, interval, message, delay)
+    randmsg = args.get("randmsg", 0)
+    randlen = args.get("randlen", 0)
+    msglen = args.get("msglen", 0)
+    maxrand = args.get("maxrand", 0)
+    retval = commonfunc(host, port, interval, message, delay, randmsg, randlen, msglen, maxrand)
     return retval
 
 
 if __name__ == '__main__':
     host = "localhost"
     port = 8443
-    interval = 100
+    interval = 1000
     delay = 0
     message = "This is a test from {}".format(socket.gethostname())
-
-    retval = commonfunc(host, port, interval, message, delay)
+    randmsg = 1
+    randlen = 0
+    msglen = 0
+    maxrand = 500
+    retval = commonfunc(host, port, interval, message, delay, randmsg, randlen, msglen, maxrand)
