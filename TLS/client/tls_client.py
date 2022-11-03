@@ -60,7 +60,7 @@ def connectSendLoop(host, port, interval, message, delay, randmsg, randlen, msgl
     if randmsg == 0:
         l_msg = message
 
-    with socket.create_connection(('127.0.0.1', port)) as sock:
+    with socket.create_connection((host, port)) as sock:
         with context.wrap_socket(sock, server_hostname=host) as ssock:
             if ssock:
                 print("soket {}".format(ssock))
@@ -97,6 +97,7 @@ def main(args):
     randlen = args.get("randlen", 0)
     msglen = args.get("msglen", 0)
     maxrand = args.get("maxrand", 0)
+    port = args.get("port", 8443)
     retval = commonfunc(host, port, interval, message, delay, randmsg, randlen, msglen, maxrand)
     return retval
 
@@ -107,8 +108,8 @@ if __name__ == '__main__':
     interval = 1000
     delay = 0
     message = "This is a test from {}".format(socket.gethostname())
-    randmsg = 1
+    randmsg = 0
     randlen = 0
     msglen = 0
-    maxrand = 500
+    maxrand = 0
     retval = commonfunc(host, port, interval, message, delay, randmsg, randlen, msglen, maxrand)
