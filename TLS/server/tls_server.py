@@ -1,6 +1,7 @@
 import socket
 import ssl
 import time
+import sys
 
 SERVERPEM = "keys/server.crt"
 PRIVATEKEY = "keys/server.key"
@@ -8,7 +9,7 @@ PRIVATEKEY = "keys/server.key"
 MAXBUFSIZE = 8192
 
 
-def listener():
+def listener(targetHost):
     buff = []
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain(SERVERPEM, PRIVATEKEY)
@@ -16,7 +17,7 @@ def listener():
     context.verify_mode = ssl.CERT_NONE
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0) as sock:
-        sock.bind((socket.gethostname(), 8443))
+        sock.bind((targetHost, 8443))
         sock.listen(10)
         with context.wrap_socket(sock, server_side=True) as ssock:
             conn, addr = ssock.accept()
@@ -29,6 +30,8 @@ def listener():
 
 
 if __name__ == '__main__':
+    targetHost = sys.argv[1]
+
     while True:
-        listener()
+        listener(targetHost)
         print("Connection ended listening again")

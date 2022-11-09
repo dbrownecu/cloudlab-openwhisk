@@ -66,7 +66,7 @@ def connectSendLoop(host, port, interval, message, delay, randmsg, randlen, msgl
                 print("soket {}".format(ssock))
                 for i in range(interval):
                     t = time.time()
-                    stamp = "{}: {} {}\n".format(i, t, l_msg)
+                    stamp = "{},{},{}:{}\n".format(i, t, l_msg,socket.gethostname())
                     ssock.sendall(stamp.encode("utf-8"))
                     time.sleep(delay)
                     if maxrand != 0:
